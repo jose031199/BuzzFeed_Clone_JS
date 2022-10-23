@@ -1,4 +1,4 @@
-##BuzzFeed Clone
+## BuzzFeed Clone
 
 ## Project:
 
