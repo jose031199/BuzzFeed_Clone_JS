@@ -1,11 +1,42 @@
 //Inserting the question into the quiz
+const unansweredQuestions = []
+const chosenAnswers = []
+const answersCombination = [
+    {
+        combination:["Emirates Stadium","Tacos","Honda Civic"],
+        text: "Amazing Picking",
+        alt:"Image of Fans",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Arsenal_v_Stoke_City_FC_-_Robin_Van_Persie_penalty_cropped.jpg/220px-Arsenal_v_Stoke_City_FC_-_Robin_Van_Persie_penalty_cropped.jpg"
+    },
+    {
+        combination:["Old Trafford","Pizza","Ford"],
+        text: "Amazing Picking",
+        alt:"Image of Fans",
+        image: "https://a.espncdn.com/photo/2020/0304/r674744_1296x1296_1-1.jpg"
+    },
+
+    {
+        combination:["Stamford Bridge","Burgers","Toyota"],
+        text: "Amazing Picking",
+        alt:"Image of Fans",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Drogba_2008.jpg/180px-Drogba_2008.jpg"
+    },
+    {
+        combination:["Anfield","Lasagna","Volskwagen"],
+        text: "Amazing Picking",
+        alt:"Image of Fans",
+        image: "https://i.pinimg.com/736x/50/af/be/50afbec431c9db38efb11f7295d0a56d--steven-gerrard-liverpool.jpg"
+    }
+]
+const questionDisplay = document.querySelector('#questions');
+const answerDisplay = document.querySelector('#answers');
 
 document.addEventListener('DOMContentLoaded',function(){
     displayQuestions();
 })
 
 function displayQuestions() {
-    const questionDisplay = document.querySelector('#questions');
+   
 
     //Variable to add the question 
     const questions = [
@@ -95,9 +126,10 @@ function displayQuestions() {
                     credit: "Xavier Rabasa"
                 },
                 {
-                    text: "Volskwagen",
-                    image: "https://images.unsplash.com/photo-1607853203100-69829c08b88e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=765&q=80",
-                    alt: "Photo of Volskwagen",
+                    text: "Tsuru",
+                    image: "https://img.remediosdigitales.com/1d4c47/sp01470028-source/450_1000.jpg",
+                    //image: "https://images.unsplash.com/photo-1607853203100-69829c08b88e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=765&q=80",
+                    alt: "Photo of Tsuru",
                     credit: "Martin Katler"
                 }
             ]
@@ -123,26 +155,112 @@ function displayQuestions() {
             answersBlock.id = question.id+"-answers"
             answersBlock.classList.add('answer-options')
 
+            //Pushing each question in the array
+            unansweredQuestions.push(question.id)
+
             //Populate answers options
             question.answers.forEach((answer)=>{
                 const answerBlock= document.createElement('div')
                 answerBlock.classList.add('answer-block')
-                answersBlock.addEventListener('click',handlerClick)
+                answerBlock.addEventListener('click',()=>handlerClick(question.id,answer.text))
 
                 //Creating image atribute and eding attributes
                 const answerImg = document.createElement('img')
                 answerImg.setAttribute('src',answer.image)
                 answerImg.setAttribute('alt',answer.alt)
 
-                
+                //Creating an heading for the title 
+                const answerTitle = document.createElement('h3')
+                answerTitle.textContent = answer.text
 
-                answerBlock.append(answerImg)
+                const answerInfo = document.createElement('p')
+                const imageLink = document.createElement('a')
+                imageLink.setAttribute('href',answer.image)
+                imageLink.textContent = answer.credit
+                const sourceLink = document.createElement('a')
+                sourceLink.textContent = 'Unsplash'
+                sourceLink.setAttribute('href','https://unsplash.com/es')
+                answerInfo.append(imageLink,' to ',sourceLink)
+
+                answerBlock.append(answerImg,answerTitle,answerInfo)
+                answersBlock.append(answerBlock)
             })
 
             questionDisplay.append(answersBlock); 
         })
 }
 
-function handlerClick(){
-    console.log('Click')
+const handlerClick = (questionId,chosenAnswer) => {
+    //console.log(`${questionId} - ${chosenAnswer}`)
+    if(unansweredQuestions.includes(questionId))
+    chosenAnswers.push(chosenAnswer)
+    const position = unansweredQuestions.indexOf(questionId)
+
+
+    if(position > -1) //There is still element in the array
+        unansweredQuestions.splice(position,1)
+
+    
+    console.log(chosenAnswers)
+    console.log(unansweredQuestions)
+
+    disableQuestions(questionId,chosenAnswer)
+    const lowestquestionId = Math.min(...unansweredQuestions)
+    location.href = '#'+lowestquestionId
+
+    if(!unansweredQuestions.length){
+        //Scroll to answer DIV
+        location.href = '#answer'
+        showAnswer()
+    }
+}
+
+const showAnswer = ()=>{
+
+    let result
+
+    answersCombination.forEach((answer)=>{
+        if(chosenAnswers.includes(answer.combination[0])
+        && chosenAnswers.includes(answer.combination[1])
+        && chosenAnswers.includes(answer.combination[2])){
+            result = answer
+        }
+    })
+
+    //Condition to sdee if the result is still undefined will give you the first option
+    if(result === undefined){
+        result = answersCombination[0]
+    }
+
+    //console.log(result)
+
+    const answerBlock= document.createElement('div')
+    answerBlock.classList.add('result-block')
+
+    const answerTitle= document.createElement('h3')
+    answerTitle.textContent = result.text
+
+    const answerImage = document.createElement('img')
+    answerImage.setAttribute('src',result.image)
+    answerImage.setAttribute('alt',result.alt)
+
+    answerBlock.append(answerTitle,answerImage)
+    answerDisplay.append(answerBlock)
+
+    const allAnswerBlocks = document.querySelectorAll('.answer-block')
+    Array.from(allAnswerBlocks).forEach(answerBlock=> answerBlock.replaceWith(answerBlock.cloneNode(true)))
+
+    setTimeout(()=>{
+        location.href = './index.html'
+    },5000)
+}
+
+const disableQuestions = (questionId,chosenAnswer)=>{
+     const currentQuestionBlock = document.getElementById(questionId+'-answers')
+
+     Array.from(currentQuestionBlock.children).forEach(blocks => {
+        if(blocks.children.item(1).innerText !== chosenAnswer){
+            blocks.style.opacity = '50%'
+        }
+     })
 }
